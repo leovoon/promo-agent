@@ -26,10 +26,12 @@ It's the personal agent I wish I had: instead of me remembering "oh right, that 
 ## How it works
 
 ```
-Gmail ──► scanner ──► promo ledger (promos.json) ──► dashboard (index.html)
-                    │                                  └─► REST API
-                    └─► Levanto decision model (connector)
-                            └─► OpenRouter LLM (fallback connector)
+Gmail ──► scanner ──► promo ledger (promos.json) ──► API (TurboAPI / Zig)
+                                          │                  │
+                                          │                  └─► Foldkit UI (dashboard, kanban)
+                                          │
+                                          └─► Levanto decision model (connector)
+                                                  └─► OpenRouter LLM (fallback connector)
 ```
 
 ### The server
