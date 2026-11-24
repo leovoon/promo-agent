@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Promo Ledger</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --panel: #171a23;
+    --panel2: #1e2230;
+    --line: #2a3040;
+    --text: #d7dbe6;
+    --muted: #8a91a5;
+    --accent: #6c8cff;
+    --green: #3ecf8e;
+    --amber: #ffb454;
+    --red: #ff6b6b;
+    --purple: #b07cff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font: 14px/1.5 -apple-system, "SF Pro Text", "Segoe UI", Roboto, sans-serif;
+    padding: 24px;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  header { display: flex; align-items: baseline; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+  h1 { font-size: 20px; font-weight: 650; letter-spacing: .2px; }
+  h1 .dot { color: var(--accent); }
+  .sub { color: var(--muted); font-size: 13px; }
+  .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 20px; }
+  .stat { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 14px 16px; }
+  .stat .n { font-size: 26px; font-weight: 700; }
+  .stat .l { color: var(--muted); font-size: 12px; text-transform: uppercase; letter-spacing: .4px; margin-top: 2px; }
+  .stat.green .n { color: var(--green); } .stat.amber .n { color: var(--amber); }
+  .stat.red .n { color: var(--red); } .stat.accent .n { color: var(--accent); }
+  .filters { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 16px; }
+  .filters input, .filters select {
+    background: var(--panel); border: 1px solid var(--line); color: var(--text);
+    border-radius: 8px; padding: 8px 12px; font-size: 13px; outline: none;
+  }
+  .filters input:focus, .filters select:focus { border-color: var(--accent); }
+  .filters input { flex: 1; min-width: 200px; }
+  table { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: 12px; overflow: hidden; }
+  th { text-align: left; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .5px;
+       padding: 10px 14px; border-bottom: 1px solid var(--line); background: var(--panel2); }
+  td { padding: 12px 14px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: rgba(108,140,255,.04); }
+  .svc { font-weight: 600; }
+  .svc a {
+    color: #9db4ff; text-decoration: none; font-weight: 600;
+    border-bottom: 1px solid transparent; transition: color .12s, border-color .12s;
+  }
+  .svc a:hover { color: #c6d4ff; border-bottom-color: #6c8cff; }
+  .email-link {
+    display: inline-block; color: #9db4ff; font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    font-size: 11px; text-decoration: none; border: 1px solid #3a4460; border-radius: 6px;
+    padding: 2px 8px; background: rgba(108,140,255,.06); transition: all .12s;
+  }
+  .email-link:hover { color: #c6d4ff; border-color: #6c8cff; background: rgba(108,140,255,.14); }
+  .acct { color: var(--muted); font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
+  .kind {
+    display: inline-block; padding: 2px 9px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  }
+  .k-promo_confirm { background: rgba(108,140,255,.14); color: var(--accent); }
+  .k-credit_granted { background: rgba(62,207,142,.14); color: var(--green); }
+  .k-trial_start { background: rgba(176,124,255,.14); color: var(--purple); }
+  .k-expiry_warning { background: rgba(255,180,84,.14); color: var(--amber); }
+  .k-receipt, .k-other { background: rgba(138,145,165,.14); color: var(--muted); }
+  .status { font-size: 12px; font-weight: 600; }
+  .s-live { color: var(--green); } .s-used { color: var(--muted); }
+  .s-expired { color: var(--red); } .s-blocked { color: var(--red); }
+  .s-pending { color: var(--amber); } .s-new { color: var(--accent); }
+  .edit-status {
+    font: inherit; font-size: 12px; font-weight: 600;
+    border: 1px solid transparent; border-radius: 20px; padding: 2px 8px;
+    cursor: pointer; outline: none; appearance: none; -webkit-appearance: none;
+    background-image: none; text-align: center;
+  }
+  .edit-status:focus { border-color: var(--accent); }
+  .st-live { background: rgba(62,207,142,.12); color: var(--green); }
+  .st-used { background: rgba(138,145,165,.12); color: var(--muted); }
+  .st-expired { background: rgba(255,107,107,.12); color: var(--red); }
+  .st-blocked { background: rgba(255,107,107,.12); color: var(--red); }
+  .st-pending { background: rgba(255,180,84,.14); color: var(--amber); }
+  .st-new { background: rgba(108,140,255,.12); color: var(--accent); }
+  .st-archived { background: rgba(138,145,165,.10); color: var(--muted); }
+  .edit-expiry {
+    font: inherit; font-size: 12px; color: var(--text);
+    background: var(--panel); border: 1px solid var(--line); border-radius: 6px;
+    padding: 2px 6px; outline: none; width: 128px;
+  }
+  .edit-expiry:focus { border-color: var(--accent); }
+  .expiry { font-size: 12px; }
+  .expiry.soon { color: var(--amber); } .expiry.over { color: var(--red); }
+  .empty { padding: 40px; text-align: center; color: var(--muted); }
+  .proof a { color: var(--accent); text-decoration: none; }
+  .proof a:hover { text-decoration: underline; }
+  footer { margin-top: 24px; color: var(--muted); font-size: 12px; }
+  .legend { margin-bottom: 14px; color: var(--muted); font-size: 12px; display: flex; gap: 16px; flex-wrap: wrap; }
+</style>
+</head>
+<body>
+  <header>
+    <h1>Promo <span class="dot">Ledger</span></h1>
+    <span class="sub" id="meta">loading…</span>
+  </header>
+
+  <div class="stats">
+    <div class="stat accent"><div class="n" id="s-total">–</div><div class="l">Total promos</div></div>
+    <div class="stat green"><div class="n" id="s-live">–</div><div class="l">Live</div></div>
+    <div class="stat amber"><div class="n" id="s-pending">–</div><div class="l">Pending / triage</div></div>
+    <div class="stat red"><div class="n" id="s-expired">–</div><div class="l">Expired / blocked</div></div>
+    <div class="stat"><div class="n" id="s-accounts">–</div><div class="l">Accounts</div></div>
+  </div>
+
+  <div class="filters">
+    <input type="text" id="q" placeholder="Search service / subject / email…">
+    <select id="acctFilter"><option value="">All accounts</option></select>
+    <select id="statusFilter">
+      <option value="">All statuses</option>
+      <option value="live">Live</option><option value="new">New</option>
+      <option value="pending">Pending</option><option value="used">Used</option>
+      <option value="expired">Expired</option><option value="blocked">Blocked</option>
+    </select>
+    <select id="kindFilter">
+      <option value="">All kinds</option>
+      <option value="promo_confirm">Promo confirm</option>
+      <option value="credit_granted">Credit granted</option>
+      <option value="trial_start">Trial start</option>
+      <option value="expiry_warning">Expiry warning</option>
+    </select>
+  </div>
+
+  <table id="tbl">
+    <thead>
+      <tr>
+        <th>Service</th><th>Account</th><th>Kind</th><th>Date</th>
+        <th>Expiry</th><th>Status</th><th>Email</th><th>Proof</th><th>Subject / notes</th><th></th>
+      </tr>
+    </thead>
+    <tbody id="rows"></tbody>
+  </table>
+  <div class="empty" id="empty" style="display:none">No rows match the current filters.</div>
+  <div id="savebar" style="display:none; position:fixed; bottom:16px; left:50%; transform:translateX(-50%); background:var(--panel2); border:1px solid var(--line); border-radius:10px; padding:8px 14px; z-index:50; box-shadow:0 6px 24px rgba(0,0,0,.4);">
+    <span id="saveinfo"></span>
+    <button id="savesave" style="margin-left:10px; background:var(--accent); color:#fff; border:0; border-radius:6px; padding:4px 12px; cursor:pointer;">Save</button>
+    <button id="savecancel" style="margin-left:6px; background:transparent; color:var(--muted); border:1px solid var(--line); border-radius:6px; padding:4px 10px; cursor:pointer;">Cancel</button>
+  </div>
+  <div class="legend">
+    <button id="rescan" style="background:var(--panel2); border:1px solid var(--line); color:var(--text); border-radius:8px; padding:6px 12px; cursor:pointer; font-size:12px;">↻ Rescan all accounts</button>
+    <span id="rescanno" style="color:var(--muted); font-size:12px;"></span>
+  </div>
+
+  <div class="legend">
+    <span class="status s-live">● live</span><span class="status s-new">● new</span>
+    <span class="status s-pending">● pending</span><span class="status s-used">● used</span>
+    <span class="status s-expired">● expired</span><span class="status s-blocked">● blocked</span>
+  </div>
+  <footer>source: <span id="src">promos.json</span> · generated by agent-bridge/promos</footer>
+
+<script>
+const fmtDate = s => {
+  if (!s) return '—';
+  const d = new Date(s);
+  if (isNaN(d)) return s.slice(0,10);
+  return d.toISOString().slice(0,10);
+};
+const expiryCell = s => {
+  if (!s) return '<span class="expiry">—</span>';
+  const d = new Date(s), now = new Date();
+  const days = Math.round((d - now)/86400000);
+  let cls = '';
+  if (days < 0) cls = 'over';
+  else if (days <= 60) cls = 'soon';
+  return `<span class="expiry ${cls}">${s.slice(0,10)} (${days < 0 ? days+'d ago' : 'in '+days+'d'})</span>`;
+};
+
+let data = { promos: [] };
+let editing = null; // {id, orig, changes}
+
+async function load() {
+  const res = await fetch('api/promos', { cache: 'no-store' });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  data = await res.json();
+  render();
+}
+
+function startEdit(p) {
+  editing = { id: p.id, orig: {...p}, changes: {} };
+  document.getElementById('savebar').style.display = 'flex';
+  document.getElementById('saveinfo').textContent = `Editing ${p.service || p.id} — choose status / expiry`;
+}
+function cancelEdit() {
+  editing = null;
+  document.getElementById('savebar').style.display = 'none';
+  render();
+}
+async function saveEdit() {
+  if (!editing) return;
+  const res = await fetch('api/promos/' + encodeURIComponent(editing.id), {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(editing.changes),
+  });
+  const out = await res.json();
+  if (!out.ok) { alert('save failed: ' + (out.error || '')); return; }
+  editing = null;
+  document.getElementById('savebar').style.display = 'none';
+  await load();
+}
+
+function render() {
+  const promos = data.promos || [];
+  const accounts = [...new Set(promos.map(p => p.account || p.creds || ''))].filter(Boolean);
+  const acctSel = document.getElementById('acctFilter');
+  acctSel.innerHTML = '<option value="">All accounts</option>' + accounts.map(a => `<option>${a}</option>`).join('');
+
+  const q = document.getElementById('q').value.toLowerCase();
+  const acct = acctSel.value, status = document.getElementById('statusFilter').value;
+  const kind = document.getElementById('kindFilter').value;
+
+  const rows = promos.filter(p => {
+    if (acct && p.account !== acct) return false;
+    if (status && p.status !== status) return false;
+    if (kind && p.kind !== kind) return false;
+    if (q) {
+      const hay = [p.service, p.subject, p.account, p.notes, p.email].join(' ').toLowerCase();
+      if (!hay.includes(q)) return false;
+    }
+    return true;
+  });
+
+  document.getElementById('s-total').textContent = promos.length;
+  document.getElementById('s-live').textContent = promos.filter(p => p.status === 'live').length;
+  document.getElementById('s-pending').textContent = promos.filter(p => ['new','pending'].includes(p.status)).length;
+  document.getElementById('s-expired').textContent = promos.filter(p => ['expired','blocked'].includes(p.status)).length;
+  document.getElementById('s-accounts').textContent = accounts.length;
+
+  const tbody = document.getElementById('rows');
+  tbody.innerHTML = '';
+  rows.forEach(p => {
+    const tr = document.createElement('tr');
+    const kindCls = 'k-' + (p.kind || 'other');
+    const proof = p.proof ? `<span class="proof"><a href="${p.proof}" target="_blank">png</a></span>` : '—';
+    const note = p.subject && (p.subject.length > 60 ? p.subject.slice(0,60)+'…' : p.subject);
+    const emailLink = p.email_url
+      ? `<a class="email-link" href="${p.email_url}" target="_blank" title="Open email in Gmail">↗ open</a>`
+      : '—';
+    const svc = p.url ? `<a href="${p.url}" target="_blank" title="${p.url}">${p.service || '?'}</a>` : (p.service || '?');
+    const st = (p.status || 'new').toLowerCase();
+    const statusSel = `<select class="edit-status st-${st}" data-id="${p.id}">` +
+      ['new','live','used','expired','blocked','pending','archived'].map(s =>
+        `<option value="${s}" ${p.status===s?'selected':''}>${s}</option>`).join('') + `</select>`;
+    const expiryIn = `<input class="edit-expiry" data-id="${p.id}" type="date" value="${p.expiry||''}" title="expiry">`;
+    tr.innerHTML = `
+      <td><div class="svc">${svc} <button class="edit-btn" data-id="${p.id}" style="background:transparent;border:1px solid var(--line);color:var(--muted);border-radius:5px;font-size:10px;cursor:pointer;margin-left:4px;">edit</button></div></td>
+      <td><span class="acct">${p.account || p.creds || ''}</span></td>
+      <td><span class="kind ${kindCls}">${p.kind || 'other'}</span></td>
+      <td>${fmtDate(p.date)}</td>
+      <td>${expiryIn}</td>
+      <td>${statusSel}</td>
+      <td>${emailLink}</td>
+      <td>${proof}</td>
+      <td style="color:var(--muted)">${note || ''}</td>
+      <td><button class="row-remove" data-id="${p.id}" data-service="${(p.service||'?').replace(/"/g,'&quot;')}" title="Remove row" style="background:transparent;border:1px solid var(--line);color:#ff6b6b;border-radius:5px;font-size:11px;cursor:pointer;padding:2px 8px;">✕</button></td>`;
+    tbody.appendChild(tr);
+    tr.querySelector('.row-remove').addEventListener('click', async e => {
+      const id = e.target.dataset.id, svc = e.target.dataset.service;
+      const mode = confirm(`Remove "${svc}"?\n\nOK = permanently delete row\nCancel = keep (use status instead to archive)`);
+      if (!mode) return;
+      const res = await fetch('api/promos/' + encodeURIComponent(id), { method: 'DELETE' });
+      const out = await res.json();
+      if (!out.ok) { alert('remove failed: ' + (out.error || '')); return; }
+      await load();
+    });
+    tr.querySelector('.edit-status').addEventListener('change', e => {
+      const which = e.target.value;
+      e.target.className = 'edit-status st-' + which;
+      editing = { id: p.id, orig: {...p}, changes: { status: which } };
+      document.getElementById('savebar').style.display = 'flex';
+      document.getElementById('saveinfo').textContent = `Editing ${p.service || p.id} → status: ${which}`;
+    });
+    tr.querySelector('.edit-expiry').addEventListener('change', e => {
+      editing = { id: p.id, orig: {...p}, changes: { expiry: e.target.value } };
+      document.getElementById('savebar').style.display = 'flex';
+      document.getElementById('saveinfo').textContent = `Editing ${p.service || p.id} → expiry: ${e.target.value}`;
+    });
+    tr.querySelector('.edit-btn').addEventListener('click', () => startEdit(p));
+  });
+  document.getElementById('empty').style.display = rows.length ? 'none' : 'block';
+  document.getElementById('meta').textContent = `${rows.length} shown · ${promos.length} total · schema v${data.schema_version || 1}`;
+}
+
+['q','acctFilter','statusFilter','kindFilter'].forEach(id => {
+  document.getElementById(id).addEventListener('input', render);
+});
+document.getElementById('savesave').addEventListener('click', saveEdit);
+document.getElementById('savecancel').addEventListener('click', cancelEdit);
+document.getElementById('rescan').addEventListener('click', async () => {
+  const btn = document.getElementById('rescan');
+  const note = document.getElementById('rescanno');
+  btn.disabled = true; note.textContent = 'starting scan…';
+  try {
+    const res = await fetch('api/scan', { method: 'POST', headers: {'Content-Type':'application/json'}, body: '{}' });
+    const out = await res.json();
+    if (!out.ok) { note.textContent = 'scan failed to start: ' + (out.error || ''); return; }
+    note.textContent = 'scanning… (background)';
+    for (let i = 0; i < 300; i++) {
+      await new Promise(r => setTimeout(r, 2000));
+      let s;
+      try { s = await (await fetch('api/scan/status')).json(); } catch { continue; }
+      const j = s.job || {};
+      if (j.state === 'done') {
+        note.textContent = `scan done: +${j.added || 0} new, ${j.seen || 0} known, ${j.total || 0} total`;
+        await load();
+        return;
+      }
+      if (j.state === 'error') { note.textContent = 'scan error: ' + (j.error || ''); return; }
+    }
+    note.textContent = 'scan still running… check /api/scan/status';
+  } catch (err) {
+    note.textContent = 'scan failed: ' + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+});
+
+load().catch(e => {
+  document.getElementById('src').textContent = 'api/promos (unreachable — start api.py: `python3 api.py` in promos/)';
+  document.getElementById('empty').style.display = 'block';
+  document.getElementById('empty').textContent = 'Could not reach the API: ' + e.message;
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,17 @@
+# local data / runtime
+promos.json
+.ledger.lock
+.api-access.log
+rescan.log
+
+# python
+.venv/
+__pycache__/
+*.pyc
+
+# ui (node)
+ui/node_modules/
+
+# editor/OS
+.DS_Store
+codedb.snapshot
